@@ -12,4 +12,4 @@
 * Create two folders named `files` and `compressed` in the same folder as `tinifier.sh`.
 * Place all pictures which needs to be compressed, inside the `files` folder.
 * If you are on linux, ensure that `tinifier.sh` is chmodded to `755`.
-* Run `tinifier.sh`.
+* Run `./tinifier.sh`.
