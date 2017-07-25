@@ -17,12 +17,12 @@ for file in $files; do
   file="`echo $file | cut -d '/' -f 2`"
   orig_size="`expr $(stat --printf="%s" files/$file) / 1024`"
   echo "`date +'%Y/%m/%d %H:%M:%S'` Compressing $file.... (${orig_size}KB) ($i of $files_count)"
-  response="`curl --progress-bar --user api:$api_key --data-binary @files/$file --output api_response.txt -i https://api.tinify.com/shrink`"
-  if [ ! $response ]; then
+  curl --progress-bar --user api:$api_key --data-binary @files/$file --output api_response.txt -i https://api.tinify.com/shrink
+  if [ $? != 0 ]; then
     echo "Something went wrong! Exiting...."
+    rm api_response.txt 2> /dev/null
     exit 1
   fi
-  exit
   download_url="`cat api_response.txt | grep location | awk '{print $2}'`"
   compression_count="`cat api_response.txt | grep compression-count | awk '{print $2}'`"
   echo "`date +'%Y/%m/%d %H:%M:%S'` Total API Requests: $compression_count/$API_LIMIT"
