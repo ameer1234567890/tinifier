@@ -12,7 +12,7 @@ fi
 
 files_count="`echo $files | wc -w`"
 i=0
-for file in `ls files`; do
+for file in $files; do
   i="`expr $i + 1`"
   file="`echo $file | cut -d '/' -f 2`"
   orig_size="`expr $(stat --printf="%s" files/$file) / 1024`"
