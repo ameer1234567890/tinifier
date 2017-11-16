@@ -10,14 +10,14 @@ if [ ! "$files" ]; then
   exit 1
 fi
 
-files_count="`echo $files | wc -w`"
+files_count="`echo \"$files\" | wc -w`"
 i=0
-for file in $files; do
+for file in "$files"; do
   i="`expr $i + 1`"
-  file="`echo $file | cut -d '/' -f 2`"
-  orig_size="`expr $(stat --printf="%s" files/$file) / 1024`"
-  echo "`date +'%Y/%m/%d %H:%M:%S'` Compressing $file.... (${orig_size}KB) ($i of $files_count)"
-  curl --progress-bar --user api:$api_key --data-binary @files/$file --output api_response.txt -i https://api.tinify.com/shrink
+  file="`echo \"$file\" | cut -d '/' -f 2`"
+  orig_size="`expr $(stat --printf="%s" files/\"$file\") / 1024`"
+  echo "`date +'%Y/%m/%d %H:%M:%S'` Compressing \"$file\".... (${orig_size}KB) ($i of $files_count)"
+  curl --progress-bar --user api:$api_key --data-binary @files/"$file" --output api_response.txt -i https://api.tinify.com/shrink
   if [ $? != 0 ]; then
     echo "Something went wrong! Exiting...."
     rm api_response.txt 2> /dev/null
@@ -32,8 +32,8 @@ for file in $files; do
     exit 1
   fi
   curl $download_url  --progress-bar --user api:$api_key --header "Content-Type: application/json" --data '{ "preserve": ["location", "creation"] }' --output compressed/$file
-  new_size="`expr $(stat --printf="%s" compressed/$file) / 1024`"
-  echo "`date +'%Y/%m/%d %H:%M:%S'` Done compressing $file (${new_size}KB)"
+  new_size="`expr $(stat --printf="%s" compressed/\"$file\") / 1024`"
+  echo "`date +'%Y/%m/%d %H:%M:%S'` Done compressing \"$file\" (${new_size}KB)"
   rm api_response.txt
   echo ""
 done
