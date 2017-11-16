@@ -10,7 +10,7 @@ if [ ! "$files" ]; then
   exit 1
 fi
 
-files_count="`echo \"$files\" | wc -w`"
+files_count="`echo \"$files\" | wc -l`"
 i=0
 for file in "$files"; do
   i="`expr $i + 1`"
