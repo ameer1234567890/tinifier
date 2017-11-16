@@ -12,7 +12,7 @@ fi
 
 files_count="`echo \"$files\" | wc -l`"
 i=0
-for file in "$files"; do
+while read -r file; do
   i="`expr $i + 1`"
   file="`echo \"$file\" | cut -d '/' -f 2`"
   orig_size="`expr $(stat --printf="%s" files/\"$file\") / 1024`"
@@ -36,5 +36,5 @@ for file in "$files"; do
   echo "`date +'%Y/%m/%d %H:%M:%S'` Done compressing \"$file\" (${new_size}KB)"
   rm api_response.txt
   echo ""
-done
+done <<< "$files"
 echo "`date +'%Y/%m/%d %H:%M:%S'` All files compressed!"
