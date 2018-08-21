@@ -1,0 +1,10 @@
+sudo: false
+language: bash
+os:
+  - linux
+env:
+  - export SHELLCHECK_OPTS="-e SC2039"
+install:
+  - shellcheck --version
+script:
+  - shellcheck $TRAVIS_BUILD_DIR/tinifier.sh
