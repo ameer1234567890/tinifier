@@ -33,6 +33,10 @@ while read -r file; do
     exit 1
   fi
   curl "$download_url"  --progress-bar --user api:"$api_key" --header "Content-Type: application/json" --data '{ "preserve": ["location", "creation"] }' --output compressed/"$file"
+  if [ ! -f compressed/"$file" ]; then
+    echo "Error: output file not found! Exiting...."
+    exit 1
+  fi
   new_size="$(($(stat --printf="%s" compressed/"$file") / 1024))"
   echo "$(date +'%Y/%m/%d %H:%M:%S') Done compressing \"$file\" (${new_size}KB)"
   rm api_response.txt
