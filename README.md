@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ameer1234567890/tinifier.svg?branch=master)](https://travis-ci.org/ameer1234567890/tinifier)
+
 #### Works with
 * Almost any linux based shell.
 * Cygwin shell on Windows.
