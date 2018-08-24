@@ -45,6 +45,7 @@ process_image(){
 mkdir -p compressed
 echo "$(date +'%Y/%m/%d %H:%M:%S') Starting compression...."
 
+# shellcheck disable=SC2039
 files="$(ls files/*.{jpg,jpeg,png,JPG,JPEG,PNG} 2> /dev/null)"
 if [ ! "$files" ]; then
   echo "No pictures found! Exiting...."
@@ -53,6 +54,7 @@ fi
 
 files_count="$(echo \""$files"\" | wc -l)"
 i=0
+# shellcheck disable=SC2039
 while read -r file; do
   i="$((i + 1))"
   process_image
