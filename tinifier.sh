@@ -17,10 +17,17 @@ process_image(){
     orig_size="$(($(stat --printf="%s" files/"$file") / 1024))"
     echo "$(date +'%Y/%m/%d %H:%M:%S') Compressing \"$file\".... (${orig_size}KB) ($i of $files_count)"
     curl --progress-bar --user api:"$api_key" --data-binary @files/"$file" --output api_response.txt -i https://api.tinify.com/shrink
-    if [ "$(< api_response.txt head -1 | awk '{print $2}')" != 201 ]; then
-      echo "Something went wrong! Error code: $(< api_response.txt head -1 | awk '{print $2}') Exiting...."
-      rm api_response.txt 2> /dev/null
-      exit 1
+    if [ -f api_response.txt ]; then
+      status_code=$(< api_response.txt  head -1 | awk '{print $2}')
+    else
+      status_code="1"
+    fi
+    if [ "$status_code" != 201 ]; then
+      echo "Something went wrong! Error code: $status_code Retrying...."
+      if [ -f api_response.txt ]; then
+        rm api_response.txt 2> /dev/null
+      fi
+      continue
     fi
     download_url="$(< api_response.txt grep location | awk '{print $2}')"
     compression_count="$(< api_response.txt grep compression-count | awk '{print $2}')"
