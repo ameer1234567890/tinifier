@@ -2,20 +2,32 @@
 API_LIMIT="500"
 api_key="$(cat ../.tinify_api_key)"
 
+log_info(){
+  printf "[\e[36m%s\e[0m] [\e[32mINFO\e[0m] $*" "$(date +'%H:%M:%S')"
+}
+
+log_warn(){
+  printf "[\e[36m%s\e[0m] [\e[33mWARNING\e[0m] $*" "$(date +'%H:%M:%S')"
+}
+
+log_error(){
+  printf "[\e[36m%s\e[0m] [\e[91mERROR\e[0m] $*" "$(date +'%H:%M:%S')"
+}
+
 process_image(){
   j=0
   while [ ! -f compressed/"$file" ]; do
     j="$((j + 1))"
     if [ "$j" -gt 1 ]; then
-      echo "Re-try $((j - 1))"
+      log_info "Re-try $((j - 1))\n"
     fi
     if [ "$j" -gt 10 ]; then
-      echo "Too many re-tries! Exiting...."
+      log_error "Too many re-tries! Exiting....\n"
       exit 1
     fi
     file="$(echo "$file" | cut -d '/' -f 2)"
     orig_size="$(($(stat --printf="%s" files/"$file") / 1024))"
-    echo "$(date +'%Y/%m/%d %H:%M:%S') Compressing \"$file\".... (${orig_size}KB) ($i of $files_count)"
+    log_info "Compressing \"$file\".... (${orig_size}KB) ($i of $files_count)\n"
     curl --progress-bar --user api:"$api_key" --data-binary @files/"$file" --output api_response.txt -i https://api.tinify.com/shrink
     if [ -f api_response.txt ]; then
       status_code=$(< api_response.txt  head -1 | awk '{print $2}')
@@ -23,7 +35,7 @@ process_image(){
       status_code="1"
     fi
     if [ "$status_code" != 201 ]; then
-      echo "Something went wrong! Error code: $status_code Retrying...."
+      log_warn "Something went wrong! Error code: $status_code Retrying....\n"
       if [ -f api_response.txt ]; then
         rm api_response.txt 2> /dev/null
       fi
@@ -31,9 +43,9 @@ process_image(){
     fi
     download_url="$(< api_response.txt grep location | awk '{print $2}')"
     compression_count="$(< api_response.txt grep compression-count | awk '{print $2}')"
-    echo "$(date +'%Y/%m/%d %H:%M:%S') Total API Requests: $compression_count/$API_LIMIT"
+    log_info "Total API Requests: $compression_count/$API_LIMIT\n"
     if [ "$compression_count" -gt "$((API_LIMIT - 1))" ]; then
-      echo "$(date +'%Y/%m/%d %H:%M:%S') API Limit Reached! Exiting...."
+      log_error "API Limit Reached! Exiting....\n"
       rm api_response.txt
       exit 1
     fi
@@ -43,19 +55,19 @@ process_image(){
       new_size=1
     fi
     new_size="$((new_size / 1024))"
-    echo "$(date +'%Y/%m/%d %H:%M:%S') Done compressing \"$file\" (${new_size}KB)"
+    log_info "Done compressing \"$file\" (${new_size}KB)\n"
     rm api_response.txt
     echo ""
   done
 }
 
 mkdir -p compressed
-echo "$(date +'%Y/%m/%d %H:%M:%S') Starting compression...."
+log_info "Starting compression....\n"
 
 # shellcheck disable=SC2039
 files="$(ls files/*.{jpg,jpeg,png,JPG,JPEG,PNG} 2> /dev/null)"
 if [ ! "$files" ]; then
-  echo "No pictures found! Exiting...."
+  log_error "No pictures found! Exiting....\n"
   exit 1
 fi
 
@@ -66,4 +78,4 @@ while read -r file; do
   i="$((i + 1))"
   process_image
 done <<< "$files"
-echo "$(date +'%Y/%m/%d %H:%M:%S') All files compressed!"
+log_info "All files compressed!\n"
