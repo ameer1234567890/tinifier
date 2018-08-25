@@ -27,7 +27,12 @@ process_image(){
     fi
     file="$(echo "$file" | cut -d '/' -f 2)"
     orig_size="$(($(stat --printf="%s" files/"$file") / 1024))"
-    log_info "Compressing \"$file\".... (${orig_size}KB) ($i of $files_count)\n"
+    if [ "$orig_size" -gt 1024 ]; then
+      orig_size_display="$(printf "%0.2f\n" "$(awk "BEGIN {print ($orig_size)/1024}")") MB"
+    else
+      orig_size_display="$orig_size KB"
+    fi
+    log_info "Compressing \"$file\".... (${orig_size_display}) ($i of $files_count)\n"
     curl --progress-bar --user api:"$api_key" --data-binary @files/"$file" --output api_response.txt -i https://api.tinify.com/shrink
     if [ -f api_response.txt ]; then
       status_code=$(< api_response.txt  head -1 | awk '{print $2}')
@@ -55,7 +60,12 @@ process_image(){
       new_size=1
     fi
     new_size="$((new_size / 1024))"
-    log_info "Done compressing \"$file\" (${new_size}KB)\n"
+    if [ "$new_size" -gt 1024 ]; then
+      new_size_display="$(printf "%0.2f\n" "$(awk "BEGIN {print ($new_size)/1024}")") MB"
+    else
+      new_size_display="$new_size KB"
+    fi
+    log_info "Done compressing \"$file\" (${new_size_display})\n"
     rm api_response.txt
     echo ""
   done
