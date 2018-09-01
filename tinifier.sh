@@ -90,7 +90,12 @@ log_info "Starting compression....\n"
   find files ! -name "$(printf "*\n*")" -name '*.png'
 } > tmp
 
-files_count="$(< tmp wc -l)"
+files_count="$(< tmp wc -l 2> /dev/null)"
+if [ "$files_count" -eq 0 ]; then
+  log_error "No pictures found! Exiting....\n"
+  exit 1
+fi
+
 count=0
 
 while IFS= read -r file; do
@@ -98,11 +103,6 @@ while IFS= read -r file; do
   process_image
 done < tmp
 rm tmp
-
-if [ "$count" -eq 0 ]; then
-  log_error "No pictures found! Exiting....\n"
-  exit 1
-fi
 
 if [ "$count" -eq 1 ]; then
   log_info "$count file compressed!\n"
