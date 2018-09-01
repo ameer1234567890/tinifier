@@ -32,7 +32,7 @@ process_image(){
     else
       orig_size_display="$orig_size KB"
     fi
-    log_info "Compressing \"$file\".... (${orig_size_display}) ($i of $files_count)\n"
+    log_info "Compressing \"$file\".... (${orig_size_display}) ($count of $files_count)\n"
     curl --progress-bar --user api:"$api_key" --data-binary @files/"$file" --output api_response.txt -i https://api.tinify.com/shrink
     if [ -f api_response.txt ]; then
       status_code=$(< api_response.txt  head -1 | awk '{print $2}')
@@ -81,18 +81,31 @@ fi
 mkdir -p compressed
 log_info "Starting compression....\n"
 
-# shellcheck disable=SC2039
-files="$(ls files/*.{jpg,jpeg,png,JPG,JPEG,PNG} 2> /dev/null)"
-if [ ! "$files" ]; then
+{
+  find files ! -name "$(printf "*\n*")" -name '*.JPG'
+  find files ! -name "$(printf "*\n*")" -name '*.jpg'
+  find files ! -name "$(printf "*\n*")" -name '*.JPEG'
+  find files ! -name "$(printf "*\n*")" -name '*.jpeg'
+  find files ! -name "$(printf "*\n*")" -name '*.PNG'
+  find files ! -name "$(printf "*\n*")" -name '*.png'
+} > tmp
+
+files_count="$(< tmp wc -l)"
+count=0
+
+while IFS= read -r file; do
+  count="$((count + 1))"
+  process_image
+done < tmp
+rm tmp
+
+if [ "$count" -eq 0 ]; then
   log_error "No pictures found! Exiting....\n"
   exit 1
 fi
 
-files_count="$(echo \""$files"\" | wc -l)"
-i=0
-# shellcheck disable=SC2039
-while read -r file; do
-  i="$((i + 1))"
-  process_image
-done <<< "$files"
-log_info "All files compressed!\n"
+if [ "$count" -eq 1 ]; then
+  log_info "$count file compressed!\n"
+else
+  log_info "$count files compressed!\n"
+fi
