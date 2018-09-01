@@ -1,6 +1,6 @@
 #!/bin/sh
 API_LIMIT="500"
-api_key="$(cat ../.tinify_api_key)"
+api_key="../.tinify_api_key"
 
 log_info(){
   printf "[\e[36m%s\e[0m] [\e[32mINFO\e[0m] $*" "$(date +'%H:%M:%S')"
@@ -70,6 +70,13 @@ process_image(){
     echo ""
   done
 }
+
+if [ -f "$api_key" ]; then
+  api_key="$(cat $api_key)"
+else
+  log_error "API Key not found. Please save API key at \e[1m$api_key\e[0m"
+  exit 1
+fi
 
 mkdir -p compressed
 log_info "Starting compression....\n"
