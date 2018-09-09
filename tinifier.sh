@@ -14,6 +14,16 @@ log_error(){
   printf "[\e[36m%s\e[0m] [\e[91mERROR\e[0m] $*" "$(date +'%H:%M:%S')"
 }
 
+check_tools(){
+  tools="curl"
+  for tool in $tools; do
+    if [ ! "$(command -v $tool)" ]; then
+      log_error "\e[1m$tool\e[0m not found! Exiting....\n"
+      exit 1
+    fi
+  done
+}
+
 process_image(){
   j=0
   while [ ! -f compressed/"$file" ]; do
@@ -70,6 +80,8 @@ process_image(){
     echo ""
   done
 }
+
+check_tools
 
 if [ -f "$api_key" ]; then
   api_key="$(cat $api_key)"
