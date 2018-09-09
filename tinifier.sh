@@ -17,7 +17,7 @@ log_error(){
 check_tools(){
   tools="curl"
   for tool in $tools; do
-    if [ ! "$(command -v $tool)" ]; then
+    if [ ! "$(command -v "$tool")" ]; then
       log_error "\e[1m$tool\e[0m not found! Exiting....\n"
       exit 1
     fi
