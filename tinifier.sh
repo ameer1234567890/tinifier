@@ -2,19 +2,19 @@
 API_LIMIT="500"
 api_key="../.tinify_api_key"
 
-log_info(){
+log_info() {
   printf "[\e[36m%s\e[0m] [\e[32mINFO\e[0m] $*" "$(date +'%H:%M:%S')"
 }
 
-log_warn(){
+log_warn() {
   printf "[\e[36m%s\e[0m] [\e[33mWARNING\e[0m] $*" "$(date +'%H:%M:%S')"
 }
 
-log_error(){
+log_error() {
   printf "[\e[36m%s\e[0m] [\e[91mERROR\e[0m] $*" "$(date +'%H:%M:%S')"
 }
 
-check_tools(){
+check_tools() {
   tools="curl"
   for tool in $tools; do
     if [ ! "$(command -v "$tool")" ]; then
@@ -24,7 +24,7 @@ check_tools(){
   done
 }
 
-process_image(){
+process_image() {
   j=0
   while [ ! -f compressed/"$file" ]; do
     j="$((j + 1))"
@@ -45,26 +45,26 @@ process_image(){
     log_info "Compressing \"$file\".... (${orig_size_display}) ($count of $files_count)\n"
     curl --progress-bar --user api:"$api_key" --data-binary @files/"$file" --output api_response.txt -i https://api.tinify.com/shrink
     if [ -f api_response.txt ]; then
-      status_code=$(< api_response.txt  head -1 | awk '{print $2}')
+      status_code=$(head <api_response.txt -1 | awk '{print $2}')
     else
       status_code="1"
     fi
     if [ "$status_code" != 201 ]; then
       log_warn "Something went wrong! Error code: $status_code Retrying....\n"
       if [ -f api_response.txt ]; then
-        rm api_response.txt 2> /dev/null
+        rm api_response.txt 2>/dev/null
       fi
       continue
     fi
-    download_url="$(< api_response.txt grep location | awk '{print $2}')"
-    compression_count="$(< api_response.txt grep compression-count | awk '{print $2}')"
+    download_url="$(grep <api_response.txt location | awk '{print $2}')"
+    compression_count="$(grep <api_response.txt compression-count | awk '{print $2}')"
     log_info "Total API Requests: $compression_count/$API_LIMIT\n"
     if [ "$compression_count" -gt "$((API_LIMIT - 1))" ]; then
       log_error "API Limit Reached! Exiting....\n"
       rm api_response.txt
       exit 1
     fi
-    curl "$download_url"  --progress-bar --user api:"$api_key" --header "Content-Type: application/json" --data '{ "preserve": ["location", "creation"] }' --output compressed/"$file"
+    curl "$download_url" --progress-bar --user api:"$api_key" --header "Content-Type: application/json" --data '{ "preserve": ["location", "creation"] }' --output compressed/"$file"
     new_size="$(stat --printf="%s" compressed/"$file")"
     if [ "$new_size" = "" ]; then
       new_size=1
@@ -100,9 +100,9 @@ log_info "Starting compression....\n"
   find files ! -name "$(printf "*\n*")" -name '*.jpeg'
   find files ! -name "$(printf "*\n*")" -name '*.PNG'
   find files ! -name "$(printf "*\n*")" -name '*.png'
-} > tmp
+} >tmp
 
-files_count="$(< tmp wc -l 2> /dev/null)"
+files_count="$(wc <tmp -l 2>/dev/null)"
 if [ "$files_count" -eq 0 ]; then
   log_error "No pictures found! Exiting....\n"
   exit 1
@@ -113,7 +113,7 @@ count=0
 while IFS= read -r file; do
   count="$((count + 1))"
   process_image
-done < tmp
+done <tmp
 rm tmp
 
 if [ "$count" -eq 1 ]; then
