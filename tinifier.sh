@@ -121,3 +121,6 @@ if [ "$count" -eq 1 ]; then
 else
   log_info "$count files compressed!\n"
 fi
+
+printf "Press enter to exit..."
+read -r
