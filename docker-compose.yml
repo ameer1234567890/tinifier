@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  tinifier:
+    build: .
+    volumes:
+      - ./.tinify_api_key:/.tinify_api_key
+      - ./files:/tinifier/files
+      - ./compressed:/tinifier/compressed
+
