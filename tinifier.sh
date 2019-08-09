@@ -56,7 +56,7 @@ process_image() {
       fi
       continue
     fi
-    download_url="$(grep <api_response.txt location | awk '{print $2}')"
+    download_url="$(grep <api_response.txt location | awk '{print $2}' | sed 's/\r//g')"
     compression_count="$(grep <api_response.txt compression-count | awk '{print $2}')"
     log_info "Total API Requests: $compression_count/$API_LIMIT\n"
     if [ "$compression_count" -gt "$((API_LIMIT - 1))" ]; then
