@@ -49,15 +49,15 @@ process_image() {
     else
       status_code="1"
     fi
-    if [ "$status_code" != 201 ]; then
+    download_url="$(grep <api_response.txt Location | awk '{print $2}' | sed 's/\r//g')"
+    if [ "$download_url" = "" ]; then
       log_warn "Something went wrong! Error code: $status_code Retrying....\n"
       if [ -f api_response.txt ]; then
         rm api_response.txt 2>/dev/null
       fi
       continue
     fi
-    download_url="$(grep <api_response.txt location | awk '{print $2}' | sed 's/\r//g')"
-    compression_count="$(grep <api_response.txt compression-count | awk '{print $2}')"
+    compression_count="$(grep <api_response.txt Compression-Count | awk '{print $2}')"
     log_info "Total API Requests: $compression_count/$API_LIMIT\n"
     if [ "$compression_count" -gt "$((API_LIMIT - 1))" ]; then
       log_error "API Limit Reached! Exiting....\n"
