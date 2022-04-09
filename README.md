@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ameer1234567890/tinifier.svg?branch=master)](https://travis-ci.org/ameer1234567890/tinifier)
+![ShellCheck](https://github.com/ameer1234567890/tinifier/actions/workflows/main.yml/badge.svg)
 
 #### Works with
 * Almost any linux based shell.
