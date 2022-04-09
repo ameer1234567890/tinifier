@@ -24,6 +24,30 @@ check_tools() {
   done
 }
 
+clear_this_line(){
+  printf '\r'
+  cols="$(tput cols)"
+  for _ in $(seq "$cols"); do
+    printf ' '
+  done
+  printf '\r'
+}
+
+erase_lines(){
+  test -z "$1" && lines="1" || lines="$1"
+  [ "$lines" = 0 ] && return
+  if [ "$lines" = 1 ]; then
+    clear_this_line
+  else
+    lines=$((lines-1))
+    clear_this_line
+    for _ in $(seq "$lines"); do
+      printf '\033[1A'
+      clear_this_line
+    done
+  fi
+}
+
 process_image() {
   j=0
   while [ ! -f compressed/"$file" ]; do
@@ -44,12 +68,13 @@ process_image() {
     fi
     log_info "Compressing \"$file\".... (${orig_size_display}) ($count of $files_count)\n"
     curl --progress-bar --user api:"$api_key" --data-binary @files/"$file" --output api_response.txt -i https://api.tinify.com/shrink
+    erase_lines 2
     if [ -f api_response.txt ]; then
       status_code=$(head <api_response.txt -1 | awk '{print $2}')
     else
       status_code="1"
     fi
-    download_url="$(grep <api_response.txt Location | awk '{print $2}' | sed 's/\r//g')"
+    download_url="$(grep -i <api_response.txt Location | awk '{print $2}' | sed 's/\r//g')"
     if [ "$download_url" = "" ]; then
       log_warn "Something went wrong! Error code: $status_code Retrying....\n"
       if [ -f api_response.txt ]; then
@@ -57,7 +82,7 @@ process_image() {
       fi
       continue
     fi
-    compression_count="$(grep <api_response.txt Compression-Count | awk '{print $2}')"
+    compression_count="$(grep -i <api_response.txt Compression-Count | awk '{print $2}' | sed 's/\r//g')"
     log_info "Total API Requests: $compression_count/$API_LIMIT\n"
     if [ "$compression_count" -gt "$((API_LIMIT - 1))" ]; then
       log_error "API Limit Reached! Exiting....\n"
@@ -65,6 +90,7 @@ process_image() {
       exit 1
     fi
     curl "$download_url" --progress-bar --user api:"$api_key" --header "Content-Type: application/json" --data '{ "preserve": ["location", "creation"] }' --output compressed/"$file"
+    erase_lines 2
     new_size="$(stat --printf="%s" compressed/"$file")"
     if [ "$new_size" = "" ]; then
       new_size=1
@@ -92,6 +118,7 @@ fi
 
 mkdir -p compressed
 log_info "Starting compression....\n"
+echo ""
 
 {
   find files ! -name "$(printf "*\n*")" -name '*.JPG'
