@@ -101,7 +101,8 @@ process_image() {
     else
       new_size_display="$new_size KB"
     fi
-    log_info "Done compressing \"$file\" (${new_size_display})\n"
+    percentage="$(printf %.2f "$((10000 * new_size / orig_size))e-2")"
+    log_info "Done compressing \"$file\" (${new_size_display}) (${percentage}%% of original)\n"
     rm api_response.txt
     echo ""
   done
